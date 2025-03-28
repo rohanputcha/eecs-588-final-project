@@ -34,6 +34,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7D8AA0FB2D97601800BCE672 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7DC70FD62D6A421300A3C6CB /* NotificationApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NotificationApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7DC70FD92D6A421300A3C6CB /* NotificationAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationAppApp.swift; sourceTree = "<group>"; };
 		7DC70FDB2D6A421300A3C6CB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -94,6 +95,7 @@
 		7DC70FD82D6A421300A3C6CB /* NotificationApp */ = {
 			isa = PBXGroup;
 			children = (
+				7D8AA0FB2D97601800BCE672 /* Info.plist */,
 				7DC70FD92D6A421300A3C6CB /* NotificationAppApp.swift */,
 				7DC70FDB2D6A421300A3C6CB /* ContentView.swift */,
 				7DC70FDD2D6A421700A3C6CB /* Assets.xcassets */,
@@ -422,8 +424,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"NotificationApp/Preview Content\"";
+				DEVELOPMENT_TEAM = W5A25STXM6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NotificationApp/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -450,8 +454,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"NotificationApp/Preview Content\"";
+				DEVELOPMENT_TEAM = W5A25STXM6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NotificationApp/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
