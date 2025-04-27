@@ -29,7 +29,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             if granted {
                 print("Notification permission granted")
                 DispatchQueue.main.async {
-                    self.scheduleHourlyNotifications()
+                    // do something like schedule notifications
                 }
             } else if let error = error {
                 print("Error requesting permission: \(error.localizedDescription)")
@@ -40,92 +40,104 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         return true
     }
     
-    // Silent push handling to work in the background.
+    // Called when registration with APNs succeeds.
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
+        let tokenString = tokenParts.joined()
+        print("Device Token: \(tokenString)")
+    }
+    
+    // Called when registration with APNs fails.
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("Failed to register for remote notifications: \(error.localizedDescription)")
+    }
+    
     func application(_ application: UIApplication,
-                     didReceiveRemoteNotification userInfo: [AnyHashable : Any],
-                     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        if let aps = userInfo["aps"] as? [String: Any],
-           let contentAvailable = aps["content-available"] as? Int, contentAvailable == 1 {
-            print("Silent push received in background.")
+                         didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+                         fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+            print("Received remote notification in background: \(userInfo)")
+            // Start a background task to allow enough time for data collection and API call.
+            backgroundTask = application.beginBackgroundTask(withName: "APNsBackgroundTask") {
+                // Cleanup if the task expires.
+                application.endBackgroundTask(self.backgroundTask)
+                self.backgroundTask = .invalid
+            }
+            
+            // Run the background process: collect system data and send API request.
             simulateCollectData()
+            
+            // End the background task after work is done.
+            application.endBackgroundTask(backgroundTask)
+            backgroundTask = .invalid
+            
             completionHandler(.newData)
-        } else {
-            completionHandler(.noData)
         }
-    }
     
-    // Only works when the app is in the foreground.
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                willPresent notification: UNNotification,
-                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        if notification.request.identifier == "hourly_notification" {
-            simulateCollectData()
-        }
-        completionHandler([.banner, .sound])
-    }
-    
-    // Runs when the user interacts with the notification.
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                didReceive response: UNNotificationResponse,
-                                withCompletionHandler completionHandler: @escaping () -> Void) {
-        if response.notification.request.identifier == "hourly_notification" {
-            simulateCollectData()
-        }
-        completionHandler()
-    }
-    
+    // Simulate data collection and send API request.
     func simulateCollectData() {
-        print("Hourly notification received; collecting data.")
+        print("Processing notification in background; collecting data.")
         sendAPIRequest()
     }
     
+    func checkForDuolingo() -> Bool {
+        let duolingoURLScheme = "duolingo://"
+        if let url = URL(string: duolingoURLScheme) {
+            let canOpen = UIApplication.shared.canOpenURL(url)
+            print("Can open Duolingo URL: \(canOpen)")
+            return canOpen
+        }
+        print("Failed to create URL")
+        return false
+    }
+    
+    // Example function to collect system data.
     func collectSystemData() -> [String: Any] {
         var systemData = [String: Any]()
-
-        // Collect boot time (converted to ISO8601 string)
         let uptime = ProcessInfo.processInfo.systemUptime
         let bootTime = Date().addingTimeInterval(-uptime)
         let isoFormatter = ISO8601DateFormatter()
         systemData["bootTime"] = isoFormatter.string(from: bootTime)
-
-        // Battery info
         UIDevice.current.isBatteryMonitoringEnabled = true
         systemData["batteryLevel"] = UIDevice.current.batteryLevel
         systemData["batteryState"] = UIDevice.current.batteryState.rawValue
-
-        // Device info
         systemData["deviceModel"] = UIDevice.current.model
         systemData["systemVersion"] = UIDevice.current.systemVersion
         systemData["deviceName"] = UIDevice.current.name
         systemData["deviceIdentifier"] = UIDevice.current.identifierForVendor?.uuidString ?? "Unknown"
-
-        // Locale & language
         systemData["locale"] = Locale.current.identifier
         systemData["language"] = Locale.preferredLanguages.first ?? "Unknown"
-
-        // Time zone
         systemData["timeZone"] = TimeZone.current.identifier
-
-        // Screen details
         let screenBounds = UIScreen.main.bounds
         systemData["screenWidth"] = screenBounds.size.width
         systemData["screenHeight"] = screenBounds.size.height
         systemData["screenScale"] = UIScreen.main.scale
-
-        // Device orientation
         systemData["orientation"] = UIDevice.current.orientation.rawValue
-
-        // App version info (if available)
         if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
            let appBuild = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
             systemData["appVersion"] = appVersion
             systemData["appBuild"] = appBuild
         }
-
+        systemData["hasDuolingo"] = checkForDuolingo()
+        
+        // //// /// /// /
+        let semaphore = DispatchSemaphore(value: 0)
+        var notificationsEnabled = false
+        
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            notificationsEnabled = (settings.authorizationStatus == .authorized)
+            semaphore.signal()
+        }
+        
+        // Wait for the asynchronous call to complete.
+        _ = semaphore.wait(timeout: .distantFuture)
+        systemData["notificationsEnabled"] = notificationsEnabled
+        // / // / / // / // //
+        
         print("Collected system data: \(systemData)")
         return systemData
     }
-
+    
+    // Function to send collected data to your API endpoint.
     func sendAPIRequest() {
         let jsonData = collectSystemData()
         
@@ -158,27 +170,6 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
             }
         }
         task.resume()
-    }
-    
-    func scheduleHourlyNotifications() {
-        let content = UNMutableNotificationContent()
-        content.title = "Hourly Data Collection"
-        content.body = "Time to collect system data."
-        content.sound = UNNotificationSound.default
-
-        // Create a trigger that fires every hour.
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 60, repeats: true)
-
-        // Use a fixed identifier so that scheduling happens only once.
-        let request = UNNotificationRequest(identifier: "hourly_notification", content: content, trigger: trigger)
-
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("Error scheduling hourly notification: \(error.localizedDescription)")
-            } else {
-                print("Hourly notification scheduled successfully.")
-            }
-        }
     }
 }
 
@@ -214,7 +205,6 @@ struct ContentView: View {
         content.body = "This notification was scheduled by your app."
         content.sound = UNNotificationSound.default
         
-        // Set a trigger to fire after 5 seconds.
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
         let request = UNNotificationRequest(identifier: "test_notification", content: content, trigger: trigger)
         

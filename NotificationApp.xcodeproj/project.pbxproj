@@ -45,6 +45,7 @@
 		7DC70FF02D6A421800A3C6CB /* NotificationAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NotificationAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7DC70FF42D6A421800A3C6CB /* NotificationAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationAppUITests.swift; sourceTree = "<group>"; };
 		7DC70FF62D6A421800A3C6CB /* NotificationAppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationAppUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		7DE1B7AA2DA96E2D00AAF0CB /* NotificationApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationApp.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +96,7 @@
 		7DC70FD82D6A421300A3C6CB /* NotificationApp */ = {
 			isa = PBXGroup;
 			children = (
+				7DE1B7AA2DA96E2D00AAF0CB /* NotificationApp.entitlements */,
 				7D8AA0FB2D97601800BCE672 /* Info.plist */,
 				7DC70FD92D6A421300A3C6CB /* NotificationAppApp.swift */,
 				7DC70FDB2D6A421300A3C6CB /* ContentView.swift */,
@@ -421,6 +423,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = NotificationApp/NotificationApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"NotificationApp/Preview Content\"";
@@ -451,6 +454,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = NotificationApp/NotificationApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"NotificationApp/Preview Content\"";
